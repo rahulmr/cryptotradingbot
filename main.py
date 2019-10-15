@@ -7,6 +7,7 @@ def api_connection(key: str,
                    secret: str,
                    password: str,
                    ):
+    """Set up API connection to Coinbase Pro using CCXT."""
     cbpro = ccxt.coinbasepro()
     cbpro.apiKey = key
     cbpro.secret = secret
@@ -16,6 +17,7 @@ def update_prices(csv: str,
                     csv_size: int,
                     ticker: str = 'BTC/USD',
                   ):
+    """Pull current price for given ticker and update a CSV with new price + truncate length to keep file small"""
     market = cbpro.fetch_ticker(ticker)
     price = market['last']
 
@@ -35,17 +37,19 @@ def mac_trade(short_ma: int,
               long_ma: int,
               ticker: str = 'BTC/USD'
               ):
+    """Caclulate two moving averages and trade if a crossover has happened."""
+    """Balance comparison is to prevent future trading attempts if a trade has already been made."""
     short = price_updated['price'].iloc[-short_ma:].mean()
     long = price_updated['price'].iloc[-long_ma:].mean()
 
     balances = cbpro.fetch_balance()
     ex_status = cbpro.fetch_status()
 
-    # checking if exchange is up and trading is live
+    
     if ex_status['status'] == 'ok':
-        # checking if the short MA is above the long MA (bullish)
+   
         if short > long:
-            # checking if you have an adequate balance
+
             if (float(balances['info'][1]['balance']) * price) <= float(balances['info'][7]['balance']):
                 usd_bal = float(balances['info'][7]['balance'])
                 amount = str(usd_bal / price)
@@ -65,6 +69,7 @@ def mac_trade(short_ma: int,
 starttime = time.time()
 
 while True:
+  # input function parameters here
   api_connection()
   update_prices()
   mac_trade()
