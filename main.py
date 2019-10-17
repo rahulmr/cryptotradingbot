@@ -3,11 +3,6 @@ import ccxt
 import time
 from time import strftime, gmtime
 
-# My motivation for writing this was to combat excessive costs in a running a real-time trading bot. Constantly checking
-# trade status, streaming real-time prices, calculating multiple metrics on the fly, and updating records can really start to add
-# up in costs for a casual retail trader. The point of this script is to create a simple MA crossover trading bot that executes only
-# as often as you want it to.
-
 def api_connection(key: str,
                    secret: str,
                    password: str,
