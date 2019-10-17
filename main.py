@@ -3,22 +3,26 @@ import ccxt
 import time
 from time import strftime, gmtime
 
+# My motivation for writing this was to combat excessive costs in a running a real-time trading bot. Constantly checking
+# trade status, streaming real-time prices, calculating multiple metrics on the fly, and updating records can really start to add
+# up in costs for a casual retail trader. The point of this script is to create a simple MA crossover trading bot that executes only
+# as often as you want it to.
+
 def api_connection(key: str,
                    secret: str,
                    password: str,
                    ):
-    """Set up API connection to Coinbase Pro using CCXT."""
+    """Establish API connection to Coinbase Pro."""
     cbpro = ccxt.coinbasepro()
     cbpro.apiKey = key
     cbpro.secret = secret
     cbpro.password = password
 
-def update_prices(csv: str,
-                    csv_size: int,
-                    ticker: str = 'BTC/USD',
+def update_prices(csv: str, # csv file path
+                    csv_size: int # number of records you want to keep
                   ):
-    """Pull current price for given ticker and update a CSV with new price + truncate length to keep file small"""
-    market = cbpro.fetch_ticker(ticker)
+    """Pull current price for given ticker and update a CSV with new price + truncate length to keep file size small."""
+    market = cbpro.fetch_ticker('BTC/USD')
     price = market['last']
 
     price_data = pd.read_csv(csv)
@@ -33,9 +37,8 @@ def update_prices(csv: str,
     else:
         price_updated.to_csv(csv, index=False)
 
-def mac_trade(short_ma: int,
-              long_ma: int,
-              ticker: str = 'BTC/USD'
+def mac_trade(short_ma: int, # number of periods to calculate the short MA from
+              long_ma: int # number of periods to calculate the long MA from
               ):
     """Caclulate two moving averages and trade if a crossover has happened."""
     """Balance comparison is to prevent future trading attempts if a trade has already been made."""
@@ -53,13 +56,13 @@ def mac_trade(short_ma: int,
             if (float(balances['info'][1]['balance']) * price) <= float(balances['info'][7]['balance']):
                 usd_bal = float(balances['info'][7]['balance'])
                 amount = str(usd_bal / price)
-                cbpro.create_market_buy_order(ticker, amount)
+                cbpro.create_market_buy_order('BTC/USD', amount)
 
         elif short <= long:
 
             if (float(balances['info'][1]['balance']) * price) > float(balances['info'][7]['balance']):
                 amount = float(balances['info'][1]['balance'])
-                cbpro.create_market_sell_order(ticker, amount)
+                cbpro.create_market_sell_order('BTC/USD', amount)
 
     # remove cached orders from over an hour ago
     before = cbpro.milliseconds() - 24 * 60 * 60 * 1000
