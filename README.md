@@ -1,5 +1,5 @@
 # cryptotradingbot
-A (very) lightweight cryptoasset MA crossover trading bot for Coinbase Pro.
+A (very) lightweight BTC/USD MA crossover trading bot for Coinbase Pro.
 
 My motivation for writing this was to combat excessive costs in a running a real-time trading bot. Constantly checking trade status, 
 streaming real-time prices, calculating multiple metrics on the fly, and updating records can really start to addup in costs for a 
